@@ -26,12 +26,8 @@ class Clock extends React.Component<ClockProps, ClockState> {
     this.timeId = window.setInterval(() => {
       const newTime = new Date();
 
-      const hours = String(newTime.getUTCHours()).padStart(2, '0');
-      const minutes = String(newTime.getUTCMinutes()).padStart(2, '0');
-      const seconds = String(newTime.getUTCSeconds()).padStart(2, '0');
-      const formatted = `${hours}:${minutes}:${seconds}`;
-
-      console.log(formatted);
+      // eslint-disable-next-line no-console
+      console.log(newTime.toUTCString().slice(-12, -4));
 
       this.setState({ time: newTime });
     }, 1000);
@@ -39,6 +35,7 @@ class Clock extends React.Component<ClockProps, ClockState> {
 
   componentDidUpdate(prevProps: ClockProps) {
     if (prevProps.name !== this.props.name) {
+      // eslint-disable-next-line no-console
       console.warn(`Renamed from ${prevProps.name} to ${this.props.name}`);
     }
   }
@@ -53,16 +50,11 @@ class Clock extends React.Component<ClockProps, ClockState> {
     const { time } = this.state;
     const { name } = this.props;
 
-    const hours = String(time.getUTCHours()).padStart(2, '0');
-    const minutes = String(time.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(time.getUTCSeconds()).padStart(2, '0');
-    const formatted = `${hours}:${minutes}:${seconds}`;
-
     return (
       <div className="Clock">
         <strong className="Clock__name">{name}</strong>
-        {'time is'}
-        <span className="Clock__time">{formatted}</span>
+        {' time is '}
+        <span className="Clock__time">{time.toUTCString().slice(-12, -4)}</span>
       </div>
     );
   }
@@ -81,15 +73,18 @@ export class App extends React.Component<{}, AppState> {
     clockName: 'Clock-0',
   };
 
-  componentDidMount() {
-    document.addEventListener('click', () => {
-      this.setState({ hasClock: true });
-    });
+  handleClick = () => {
+    this.setState({ hasClock: true });
+  };
 
-    document.addEventListener('contextmenu', (event: MouseEvent) => {
-      event.preventDefault();
-      this.setState({ hasClock: false });
-    });
+  handleContextMenu = (event: MouseEvent) => {
+    event.preventDefault();
+    this.setState({ hasClock: false });
+  };
+
+  componentDidMount() {
+    document.addEventListener('click', this.handleClick);
+    document.addEventListener('contextmenu', this.handleContextMenu);
 
     this.nameInterval = window.setInterval(() => {
       this.setState({
@@ -99,6 +94,9 @@ export class App extends React.Component<{}, AppState> {
   }
 
   componentWillUnmount() {
+    document.removeEventListener('click', this.handleClick);
+    document.removeEventListener('contextmenu', this.handleContextMenu);
+
     if (this.nameInterval) {
       window.clearInterval(this.nameInterval);
     }
